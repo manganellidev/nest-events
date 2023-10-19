@@ -23,8 +23,6 @@ import { UsersService } from './users.service';
 @Controller('users')
 @SerializeOptions({ excludePrefixes: ['_'] })
 export class UsersController {
-  private readonly logger = new Logger(UsersController.name);
-
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
@@ -36,6 +34,12 @@ export class UsersController {
   @Get(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   async find(@Param('id', ParseUUIDPipe) id: string) {
+    const user = this.usersService.findById(id);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return this.usersService.findById(id);
   }
 
