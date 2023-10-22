@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as bcrypt from 'bcrypt';
 
 const firstNames = [
   'Wade',
@@ -384,8 +385,18 @@ export const generateUsers = (amount) => {
       username: `${firstName}_${lastName}`.toLowerCase(),
       email:
         `${firstName}.${lastName}@${getRandomEmailDomain()}.com`.toLowerCase(),
-      password: `${firstName}123!@#${lastName}`,
+      password: bcrypt.hashSync(`${firstName}123!@#${lastName}`, 1),
     });
   }
+
+  users.push({
+    id: '566863d0-c4c7-4a17-be53-7b0633a939a1',
+    firstName: 'Jorge',
+    lastName: 'Jarbas',
+    username: 'jorge_jarbas',
+    email: 'jorge.jarbasn@gmail.com',
+    password: bcrypt.hashSync(`Jorge123!@#$Jarbas`, 1),
+  });
+
   return users;
 };

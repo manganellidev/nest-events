@@ -9,22 +9,29 @@ import { CreateUserDto } from './input/create-user.dto';
 import { BaseService } from 'src/common/base.service';
 import { v4 as uuidv4 } from 'uuid';
 import { generateUsers } from './users.seed';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UsersService extends BaseService<IUser, ListUsersFilter> {
-  constructor(private readonly userEntity: User) {
+  constructor(
+    private readonly userEntity: User,
+    private readonly authService: AuthService,
+  ) {
     super();
-    generateUsers(1000).forEach((u) => this.userEntity.save(u));
+    generateUsers(100).forEach((u) => this.userEntity.save(u));
   }
 
-  save(newUser: CreateUserDto): IUser;
-  save(updateUser: IUser): IUser;
-  save(userToBeSaved: CreateUserDto | IUser): IUser {
+  async save(newUser: CreateUserDto): Promise<IUser>;
+  async save(updateUser: IUser): Promise<IUser>;
+  async save(userToBeSaved: CreateUserDto | IUser): Promise<IUser> {
     let user = {} as IUser;
 
     if (!(userToBeSaved instanceof User)) {
       user = new User();
       user.id = uuidv4();
+      userToBeSaved.password = await this.authService.hashPassword(
+        userToBeSaved.password,
+      );
     }
 
     Object.assign(user, userToBeSaved);
@@ -46,6 +53,15 @@ export class UsersService extends BaseService<IUser, ListUsersFilter> {
 
   findById(id: string) {
     return this.userEntity.users.get(id);
+  }
+
+  findByUsername(username: string) {
+    for (const user of this.userEntity.users.values()) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return null;
   }
 
   findAll(filter: ListUsersFilter) {
